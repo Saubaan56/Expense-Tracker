@@ -1,0 +1,102 @@
+:root {
+    --bg: #EFEDE7;
+    --ink: #262319;
+    --ink-soft: #6b675c;
+    --line: #d9d5c9;
+    --card: #ffffff;
+    --accent: #3F6659;
+    --accent-soft: #E4EBE8;
+    --danger: #B0523E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1a17; --ink: #ece8de; --ink-soft: #a39d8c;
+      --line: #3a372e; --card: #242219; --accent: #7fb3a0;
+      --accent-soft: #2a332e; --danger: #d98a76;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1b1a17; --ink: #ece8de; --ink-soft: #a39d8c;
+    --line: #3a372e; --card: #242219; --accent: #7fb3a0;
+    --accent-soft: #2a332e; --danger: #d98a76;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    padding: env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+    min-height: 100%;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  h1 { font-size: 1.6rem; font-weight: 400; letter-spacing: 0.01em; margin: 0 0 1.75rem; }
+  .balance-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1.5rem; margin-bottom: 1.75rem;
+  }
+  .balance-label { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 0.35rem; }
+  .balance-amount { font-size: 2.2rem; }
+  .balance-amount.negative { color: var(--danger); }
+  form {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1.25rem; margin-bottom: 1.75rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+  }
+  form .full { grid-column: 1 / -1; }
+  label { font-family: system-ui, sans-serif; font-size: 0.78rem; color: var(--ink-soft); display: block; margin-bottom: 0.3rem; }
+  input, select {
+    width: 100%; font-family: system-ui, sans-serif; font-size: 0.95rem;
+    padding: 0.55rem 0.6rem; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); color: var(--ink);
+  }
+  button {
+    font-family: system-ui, sans-serif; font-size: 0.9rem; cursor: pointer;
+    border: none; border-radius: 6px; padding: 0.6rem 1rem;
+  }
+  .add-btn { background: var(--accent); color: #fff; grid-column: 1 / -1; }
+  .add-btn:hover { opacity: 0.92; }
+  .budget-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1.25rem; margin-bottom: 1.25rem;
+  }
+  .budget-row {
+    display: flex; gap: 1.5rem; margin: 0.5rem 0 0.75rem; flex-wrap: wrap;
+  }
+  .budget-num { display: block; font-size: 1.3rem; }
+  .budget-num.negative { color: var(--danger); }
+  .budget-cap { display: block; font-family: system-ui, sans-serif; font-size: 0.72rem; color: var(--ink-soft); }
+  .link-btn {
+    background: none; border: none; color: var(--accent); font-family: system-ui, sans-serif;
+    font-size: 0.8rem; padding: 0; cursor: pointer; text-decoration: underline; margin-right: 1rem;
+  }
+  #budget-setup { margin-bottom: 1.25rem; }
+  .form-error {
+    font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--danger);
+  }
+  .filter-row {
+    display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem;
+    font-family: system-ui, sans-serif;
+  }
+  .filter-row label { margin: 0; }
+  .filter-row select { width: auto; padding: 0.4rem 0.55rem; font-size: 0.85rem; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 0.85rem 1rem; margin-bottom: 0.6rem;
+    display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+  }
+  .item-main { min-width: 0; }
+  .item-desc { font-size: 1rem; }
+  .item-meta { font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--ink-soft); margin-top: 0.15rem; }
+  .item-amount { font-size: 1.05rem; white-space: nowrap; }
+  .item-amount.expense { color: var(--danger); }
+  .item-amount.income { color: var(--accent); }
+  .del-btn {
+    background: transparent; color: var(--ink-soft); font-family: system-ui, sans-serif;
+    font-size: 1.1rem; padding: 0.2rem 0.5rem; line-height: 1;
+  }
+  .del-btn:hover { color: var(--danger); }
+  .empty {
+    font-family: system-ui, sans-serif; color: var(--ink-soft); font-size: 0.9rem;
+    text-align: center; padding: 2rem 0;
+  }
