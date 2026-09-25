@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ledger — Expense Tracker</title>
+<style>
+  :root {
+    --bg: #EFEDE7;
+    --ink: #262319;
+    --ink-soft: #6b675c;
+    --line: #d9d5c9;
+    --card: #ffffff;
+    --accent: #3F6659;
+    --accent-soft: #E4EBE8;
+    --danger: #B0523E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1a17; --ink: #ece8de; --ink-soft: #a39d8c;
+      --line: #3a372e; --card: #242219; --accent: #7fb3a0;
+      --accent-soft: #2a332e; --danger: #d98a76;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1b1a17; --ink: #ece8de; --ink-soft: #a39d8c;
+    --line: #3a372e; --card: #242219; --accent: #7fb3a0;
+    --accent-soft: #2a332e; --danger: #d98a76;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    padding: env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+    min-height: 100%;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  h1 { font-size: 1.6rem; font-weight: 400; letter-spacing: 0.01em; margin: 0 0 1.75rem; }
+  .balance-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1.5rem; margin-bottom: 1.75rem;
+  }
+  .balance-label { font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 0.35rem; }
+  .balance-amount { font-size: 2.2rem; }
+  .balance-amount.negative { color: var(--danger); }
+  form {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1.25rem; margin-bottom: 1.75rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+  }
+  form .full { grid-column: 1 / -1; }
+  label { font-family: system-ui, sans-serif; font-size: 0.78rem; color: var(--ink-soft); display: block; margin-bottom: 0.3rem; }
+  input, select {
+    width: 100%; font-family: system-ui, sans-serif; font-size: 0.95rem;
+    padding: 0.55rem 0.6rem; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); color: var(--ink);
+  }
+  button {
+    font-family: system-ui, sans-serif; font-size: 0.9rem; cursor: pointer;
+    border: none; border-radius: 6px; padding: 0.6rem 1rem;
+  }
+  .add-btn { background: var(--accent); color: #fff; grid-column: 1 / -1; }
+  .add-btn:hover { opacity: 0.92; }
+  .budget-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1.25rem; margin-bottom: 1.25rem;
+  }
+  .budget-row {
+    display: flex; gap: 1.5rem; margin: 0.5rem 0 0.75rem; flex-wrap: wrap;
+  }
+  .budget-num { display: block; font-size: 1.3rem; }
+  .budget-num.negative { color: var(--danger); }
+  .budget-cap { display: block; font-family: system-ui, sans-serif; font-size: 0.72rem; color: var(--ink-soft); }
+  .link-btn {
+    background: none; border: none; color: var(--accent); font-family: system-ui, sans-serif;
+    font-size: 0.8rem; padding: 0; cursor: pointer; text-decoration: underline; margin-right: 1rem;
+  }
+  #budget-setup { margin-bottom: 1.25rem; }
+  .form-error {
+    font-family: system-ui, sans-serif; font-size: 0.8rem; color: var(--danger);
+  }
+  .filter-row {
+    display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem;
+    font-family: system-ui, sans-serif;
+  }
+  .filter-row label { margin: 0; }
+  .filter-row select { width: auto; padding: 0.4rem 0.55rem; font-size: 0.85rem; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 0.85rem 1rem; margin-bottom: 0.6rem;
+    display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+  }
+  .item-main { min-width: 0; }
+  .item-desc { font-size: 1rem; }
+  .item-meta { font-family: system-ui, sans-serif; font-size: 0.75rem; color: var(--ink-soft); margin-top: 0.15rem; }
+  .item-amount { font-size: 1.05rem; white-space: nowrap; }
+  .item-amount.expense { color: var(--danger); }
+  .item-amount.income { color: var(--accent); }
+  .del-btn {
+    background: transparent; color: var(--ink-soft); font-family: system-ui, sans-serif;
+    font-size: 1.1rem; padding: 0.2rem 0.5rem; line-height: 1;
+  }
+  .del-btn:hover { color: var(--danger); }
+  .empty {
+    font-family: system-ui, sans-serif; color: var(--ink-soft); font-size: 0.9rem;
+    text-align: center; padding: 2rem 0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Ledger</h1>
+
+  <div class="balance-card">
+    <div class="balance-label">BALANCE</div>
+    <div class="balance-amount" id="balance">₹0.00</div>
+  </div>
+
+  <div class="budget-card" id="budget-card" style="display:none;">
+    <div class="balance-label">BUDGET</div>
+    <div class="budget-row">
+      <div><span class="budget-num" id="budget-total"></span><span class="budget-cap">Budget</span></div>
+      <div><span class="budget-num" id="budget-spent"></span><span class="budget-cap">Spent</span></div>
+      <div><span class="budget-num" id="budget-remaining"></span><span class="budget-cap">Remaining</span></div>
+    </div>
+    <button type="button" class="link-btn" id="edit-budget-btn">Edit budget</button>
+    <button type="button" class="link-btn" id="remove-budget-btn">Turn off</button>
+  </div>
+
+  <div id="budget-setup">
+    <button type="button" class="link-btn" id="show-budget-form-btn">+ Set a budget (optional)</button>
+  </div>
+  <form id="budget-form" style="display:none;">
+    <div class="full">
+      <label for="budget-input">Initial budget</label>
+      <input type="number" id="budget-input" step="0.01" placeholder="e.g. 10000">
+    </div>
+    <button type="submit" class="add-btn">Save budget</button>
+    <div class="form-error full" id="budget-form-error" style="display:none;"></div>
+  </form>
+
+  <form id="expense-form">
+    <div class="full">
+      <label for="desc">Description</label>
+      <input type="text" id="desc" placeholder="Coffee, rent, freelance payment…" required>
+    </div>
+    <div>
+      <label for="amount">Amount</label>
+      <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+    </div>
+    <div>
+      <label for="type">Type</label>
+      <select id="type">
+        <option value="expense">Expense</option>
+        <option value="income">Income</option>
+      </select>
+    </div>
+    <div class="full">
+      <label for="category">Category</label>
+      <select id="category">
+        <option>Food</option>
+        <option>Transport</option>
+        <option>Bills</option>
+        <option>Fun</option>
+        <option>Shopping</option>
+        <option>Health</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <button type="submit" class="add-btn">Add entry</button>
+    <div class="form-error full" id="form-error" style="display:none;"></div>
+  </form>
+
+  <div class="filter-row">
+    <label for="category-filter">Show</label>
+    <select id="category-filter">
+      <option value="All">All categories</option>
+      <option>Food</option>
+      <option>Transport</option>
+      <option>Bills</option>
+      <option>Fun</option>
+      <option>Shopping</option>
+      <option>Health</option>
+      <option>Other</option>
+    </select>
+  </div>
+
+  <ul id="expense-list"></ul>
+  <div class="empty" id="empty-msg">No entries yet — add your first one above.</div>
+</div>
+
+<script>
+  // --- State ---
+  // Each entry: { id, desc, amount, type: 'expense'|'income', category, date }
+  let entries = [];
+
+  function loadEntries() {
+    try {
+      const raw = localStorage.getItem('ledger-entries');
+      entries = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      entries = [];
+    }
+  }
+
+  function saveEntries() {
+    try {
+      localStorage.setItem('ledger-entries', JSON.stringify(entries));
+    } catch (e) {
+      console.error('Could not save entries', e);
+    }
+  }
+
+  function formatMoney(n) {
+    const sign = n < 0 ? '-' : '';
+    return sign + '₹' + Math.abs(n).toFixed(2);
+  }
+
+  function render() {
+    const list = document.getElementById('expense-list');
+    const emptyMsg = document.getElementById('empty-msg');
+    const filterValue = document.getElementById('category-filter').value;
+    list.innerHTML = '';
+
+    // Apply the category filter first, then sort newest first
+    const filtered = filterValue === 'All'
+      ? entries
+      : entries.filter(e => e.category === filterValue);
+
+    const sorted = [...filtered].sort((a, b) => b.id - a.id);
+
+    if (entries.length === 0) {
+      emptyMsg.textContent = 'No entries yet — add your first one above.';
+      emptyMsg.style.display = 'block';
+    } else if (sorted.length === 0) {
+      emptyMsg.textContent = 'No entries in this category.';
+      emptyMsg.style.display = 'block';
+    } else {
+      emptyMsg.style.display = 'none';
+    }
+
+    for (const entry of sorted) {
+      const li = document.createElement('li');
+
+      const main = document.createElement('div');
+      main.className = 'item-main';
+
+      const desc = document.createElement('div');
+      desc.className = 'item-desc';
+      desc.textContent = entry.desc;
+
+      const meta = document.createElement('div');
+      meta.className = 'item-meta';
+      meta.textContent = entry.category + ' · ' + entry.date;
+
+      main.appendChild(desc);
+      main.appendChild(meta);
+
+      const amount = document.createElement('div');
+      amount.className = 'item-amount ' + entry.type;
+      const signedAmount = entry.type === 'expense' ? -entry.amount : entry.amount;
+      amount.textContent = formatMoney(signedAmount);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del-btn';
+      delBtn.textContent = '✕';
+      delBtn.title = 'Delete this entry';
+      delBtn.addEventListener('click', () => deleteEntry(entry.id));
+
+      li.appendChild(main);
+      li.appendChild(amount);
+      li.appendChild(delBtn);
+      list.appendChild(li);
+    }
+
+    updateBalance();
+    renderBudget();
+  }
+
+  // --- Budget mode (optional, separate from balance) ---
+  let budget = null; // null means the person hasn't opted in
+
+  function loadBudget() {
+    const raw = localStorage.getItem('ledger-budget');
+    budget = raw !== null ? parseFloat(raw) : null;
+  }
+
+  function saveBudget(value) {
+    budget = value;
+    localStorage.setItem('ledger-budget', String(value));
+  }
+
+  function clearBudget() {
+    budget = null;
+    localStorage.removeItem('ledger-budget');
+  }
+
+  function renderBudget() {
+    const card = document.getElementById('budget-card');
+    const setup = document.getElementById('budget-setup');
+
+    if (budget === null) {
+      card.style.display = 'none';
+      setup.style.display = 'block';
+      return;
+    }
+
+    setup.style.display = 'none';
+    card.style.display = 'block';
+
+    // Spending against budget only counts expenses — income doesn't refill it
+    const spent = entries
+      .filter(e => e.type === 'expense')
+      .reduce((sum, e) => sum + e.amount, 0);
+    const remaining = budget - spent;
+
+    document.getElementById('budget-total').textContent = formatMoney(budget);
+    document.getElementById('budget-spent').textContent = formatMoney(spent);
+    const remainingEl = document.getElementById('budget-remaining');
+    remainingEl.textContent = formatMoney(remaining);
+    remainingEl.classList.toggle('negative', remaining < 0);
+  }
+
+  function updateBalance() {
+    const total = entries.reduce((sum, e) => {
+      return sum + (e.type === 'expense' ? -e.amount : e.amount);
+    }, 0);
+
+    const balanceEl = document.getElementById('balance');
+    balanceEl.textContent = formatMoney(total);
+    balanceEl.classList.toggle('negative', total < 0);
+  }
+
+  function addEntry(desc, amount, type, category) {
+    entries.push({
+      id: Date.now(),
+      desc: desc,
+      amount: amount,
+      type: type,
+      category: category,
+      date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+            + ' · ' + new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+    });
+    saveEntries();
+    render();
+  }
+
+  function deleteEntry(id) {
+    entries = entries.filter(e => e.id !== id);
+    saveEntries();
+    render();
+  }
+
+  const categoryInput = document.getElementById('category');
+
+  document.getElementById('expense-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const descInput = document.getElementById('desc');
+    const amountInput = document.getElementById('amount');
+    const typeInput = document.getElementById('type');
+
+    const desc = descInput.value.trim();
+    const amount = parseFloat(amountInput.value);
+    const formError = document.getElementById('form-error');
+    formError.style.display = 'none';
+
+    // Basic validation: no empty description, no negative or zero amounts
+    if (!desc || isNaN(amount) || amount <= 0) {
+      formError.textContent = 'Enter a description and a positive amount.';
+      formError.style.display = 'block';
+      return;
+    }
+
+    addEntry(desc, amount, typeInput.value, categoryInput.value);
+
+    descInput.value = '';
+    amountInput.value = '';
+    descInput.focus();
+  });
+
+  document.getElementById('category-filter').addEventListener('change', render);
+
+  
+  // --- Budget mode wiring ---
+  const budgetForm = document.getElementById('budget-form');
+  const budgetInput = document.getElementById('budget-input');
+
+  function openBudgetForm(prefill) {
+    budgetForm.style.display = 'grid';
+    budgetInput.value = prefill !== undefined ? prefill : '';
+    document.getElementById('budget-form-error').style.display = 'none';
+    budgetInput.focus();
+  }
+
+  document.getElementById('show-budget-form-btn').addEventListener('click', function () {
+    openBudgetForm();
+  });
+
+  document.getElementById('edit-budget-btn').addEventListener('click', function () {
+    openBudgetForm(budget);
+  });
+
+  document.getElementById('remove-budget-btn').addEventListener('click', function () {
+    // Only clears the budget number — logged entries are never touched
+    clearBudget();
+    budgetForm.style.display = 'none';
+    renderBudget();
+  });
+
+  budgetForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const value = parseFloat(budgetInput.value);
+    const budgetError = document.getElementById('budget-form-error');
+    if (isNaN(value) || value <= 0) {
+      budgetError.textContent = 'Enter a positive starting budget.';
+      budgetError.style.display = 'block';
+      return;
+    }
+    budgetError.style.display = 'none';
+    saveBudget(value);
+    budgetForm.style.display = 'none';
+    renderBudget();
+  });
+
+  loadEntries();
+  loadBudget();
+  render();
+</script>
+</body>
+</html>
